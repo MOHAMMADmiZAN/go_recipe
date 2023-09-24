@@ -1,9 +1,9 @@
 package cmd
 
-import "log"
+import "github.com/MOHAMMADmiZAN/go_recipe/internal/app/api"
 
 func StartApp() {
 
-	log.Print("Hello from app")
+	api.RunAPIServer()
 
 }
