@@ -1,9 +1,11 @@
 package main
 
-import "github.com/MOHAMMADmiZAN/go_recipe/internal/app"
+import (
+	"github.com/MOHAMMADmiZAN/go_recipe/cmd"
+)
 
 func main() {
 
-	app.StartApp()
+	cmd.StartApp()
 
 }
