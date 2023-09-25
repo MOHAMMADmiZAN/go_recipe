@@ -1,20 +1,12 @@
-package response
+package appError
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 )
-
-// JsonResponse Define a helper function to send JSON responses
-func JsonResponse(w http.ResponseWriter, data interface{}) error {
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	return enc.Encode(data)
-}
 
 // HandleError Helper function to handle errors
 func HandleError(w http.ResponseWriter, r *http.Request, err interface{}) {
@@ -36,6 +28,7 @@ func HandleErrorAndExit(message string, err error, exitCode int) {
 	os.Exit(exitCode)
 }
 
+// ErrorHandler Define a helper function to handle errors
 func ErrorHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

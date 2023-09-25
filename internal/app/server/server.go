@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/response"
+	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/appError"
+	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/db"
 	"log"
 	"net/http"
 	"os"
@@ -15,16 +15,15 @@ import (
 func RunServer(port string, handler http.Handler) {
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: response.ErrorHandler(handler),
+		Handler: appError.ErrorHandler(handler),
 	}
 
 	go func() {
-		fmt.Printf("Server is running on port %s...\n", port)
+		log.Printf("Server is running on port %s...\n", port)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			fmt.Printf("Server stopped: %v\n", err)
+			log.Printf("Server stopped: %v\n", err)
 		}
 	}()
-
 	quit := make(chan struct{})
 	gracefulShutdown(server, quit)
 	<-quit
@@ -36,8 +35,14 @@ func gracefulShutdown(server *http.Server, quit chan struct{}) {
 	<-sigint
 
 	log.Println("Shutting down server...")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer func() {
+		err := db.Disconnect()
+		if err != nil {
+			log.Printf("Error disconnecting from database: %v\n", err)
+			cancel()
+		}
+	}()
 
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("Error during shutdown: %v\n", err)
