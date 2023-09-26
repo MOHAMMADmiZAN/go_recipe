@@ -26,7 +26,7 @@ func HandleHealthRequest(w http.ResponseWriter, r *http.Request) {
 
 	response := HealthResponse{
 		Status:  "OK",
-		Message: "The server is running Healthy",
+		Message: "The server is running",
 	}
 
 	appResponse.ResponseMessage(w, http.StatusOK, response)
