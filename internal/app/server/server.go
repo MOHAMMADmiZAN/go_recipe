@@ -35,7 +35,7 @@ func gracefulShutdown(server *http.Server, quit chan struct{}) {
 	<-sigint
 
 	log.Println("Shutting down server...")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer func() {
 		err := db.Disconnect()
 		if err != nil {

@@ -1,14 +1,13 @@
 package api
 
 import (
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/app/server"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/appResponse"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/db"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/utils"
+	"log"
+	"net/http"
+	"os"
 )
 
 // HealthResponse represents a health response.
@@ -37,6 +36,11 @@ func ServeStaticFiles() http.Handler {
 	return http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
 }
 
+// render swagger ui
+func renderSwaggerUI(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./public/swagger-ui.html")
+}
+
 // RunAPIServer starts the API server.
 func RunAPIServer() {
 	utils.LoadEnv()
@@ -45,6 +49,7 @@ func RunAPIServer() {
 
 	router.HandleFunc("/health", HandleHealthRequest)
 	router.Handle("/public/", ServeStaticFiles())
+	router.HandleFunc("/", renderSwaggerUI)
 
 	err := db.Init()
 	if err != nil {

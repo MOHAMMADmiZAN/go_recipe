@@ -1,0 +1,2369 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Recipe Management",
+    "description": "API System for Recipe Management Service",
+    "version": "1.0.0",
+    "termsOfService": "https://app.swaggerhub.com/apis/takbir.jcd",
+    "contact": {
+      "name": "Md MIZANUR RAHMAN",
+      "url": "https://app.swaggerhub.com/apis/takbir.jcd",
+      "email": "takbir.jcd@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1/",
+      "description": "Go Server (Development)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication Endpoints (Public)"
+    },
+    {
+      "name": "Recipe",
+      "description": "Recipe Endpoints (Public + Private)"
+    },
+    {
+      "name": "Ingredient",
+      "description": "Ingredient Endpoints (Public + Private)"
+    },
+    {
+      "name": "User",
+      "description": "User Endpoints (Admin + Public)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 400
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Bad Request"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string",
+                        "example": "email"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Email Field is Required"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "example": 401
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Access denied. You do not have permission to perform this operation."
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32",
+                  "example": 404
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Your Requested Item Not Found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 500
+                },
+                "message": {
+                  "type": "string",
+                  "example": "An unexpected error occurred while processing your request. Please try again later."
+                }
+              }
+            }
+          }
+        }
+      },
+      "QueryParamValidationError": {
+        "description": "Bad Request - Query Parameter Validation Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 400
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Bad Request - Query Parameter Validation Error"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "parameter": {
+                        "type": "string",
+                        "example": "page"
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "Page number must be a positive integer."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DataDeletedResponse": {
+        "description": "Data Deleted Successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Your Requested Data Deleted Successfully"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchNotFoundResponse": {
+        "description": "NOT_FOUND",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 404
+                },
+                "message": {
+                  "type": "string",
+                  "example": "No Item match the provided search criteria."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "PageParam": {
+        "in": "query",
+        "name": "page",
+        "description": "Page number (default: 1)",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1
+        }
+      },
+      "LimitParam": {
+        "in": "query",
+        "name": "limit",
+        "description": "Number of items per page (default: 10)",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1
+        }
+      },
+      "SortParam": {
+        "in": "query",
+        "name": "sort",
+        "description": "Sorting criteria (e.g., updatedAt)",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SearchParam": {
+        "in": "query",
+        "name": "search",
+        "description": "Search term to filter items by search value (optional)",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "SortTypeParam": {
+        "in": "query",
+        "name": "sort_type",
+        "description": "Sorting By listing order",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "dsc"
+          ],
+          "example": "dsc"
+        }
+      },
+      "IdParams": {
+        "required": true,
+        "in": "path",
+        "name": "id",
+        "description": "Item ID",
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{24}$"
+        }
+      },
+      "ExpandParams": {
+        "in": "query",
+        "name": "expand",
+        "description": "expand Data With expand keys",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "Ingredient": {
+        "type": "object",
+        "properties": {
+          "ingredientId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "name": {
+            "type": "string",
+            "example": "Chicken"
+          },
+          "quantity": {
+            "type": "string",
+            "example": "1 pcs"
+          },
+          "ingredientLink": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "example": "/ingredients/ingredient_id1"
+              },
+              "rel": {
+                "type": "string",
+                "example": "index"
+              }
+            }
+          }
+        }
+      },
+      "Creator": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "userLink": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "example": "/user/user_id1"
+              },
+              "rel": {
+                "type": "string",
+                "example": "user"
+              }
+            }
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "example": 50
+          },
+          "limit": {
+            "type": "integer",
+            "example": 10
+          },
+          "page": {
+            "type": "integer",
+            "example": 2
+          },
+          "pages": {
+            "type": "integer",
+            "example": 5
+          }
+        }
+      },
+      "PaginationLinks": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "example": "/items?page=2&limit=10&sort=-createdAt&search=Chicken"
+              },
+              "rel": {
+                "type": "string",
+                "example": "self"
+              }
+            }
+          },
+          "prev": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "example": "/items?page=1&limit=10&sort=-createdAt&search=Chicken"
+              },
+              "rel": {
+                "type": "string",
+                "example": "prev"
+              }
+            }
+          },
+          "next": {
+            "type": "object",
+            "properties": {
+              "href": {
+                "type": "string",
+                "example": "/items?page=3&limit=10&sort=-createdAt&search=Chicken"
+              },
+              "rel": {
+                "type": "string",
+                "example": "next"
+              }
+            }
+          }
+        }
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "user123"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "user"
+              ],
+              "default": "user"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "timestamp"
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "self": {
+                "type": "object",
+                "properties": {
+                  "rel": {
+                    "type": "string",
+                    "example": "self"
+                  },
+                  "href": {
+                    "type": "string",
+                    "example": "/api/v1/users/user_id1"
+                  },
+                  "method": {
+                    "type": "string",
+                    "example": "GET"
+                  }
+                }
+              },
+              "update_profile": {
+                "type": "object",
+                "properties": {
+                  "rel": {
+                    "type": "string",
+                    "example": "update_profile"
+                  },
+                  "href": {
+                    "type": "string",
+                    "example": "/api/v1/users/user_id1"
+                  },
+                  "method": {
+                    "type": "string",
+                    "example": "PUT"
+                  }
+                }
+              },
+              "delete_profile": {
+                "type": "object",
+                "properties": {
+                  "rel": {
+                    "type": "string",
+                    "example": "delete_profile"
+                  },
+                  "href": {
+                    "type": "string",
+                    "example": "/api/v1/users/user_id1"
+                  },
+                  "method": {
+                    "type": "string",
+                    "example": "DELETE"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserUpdateInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "new_user123"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "new_user@example.com"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "admin",
+                "user"
+              ],
+              "default": "user"
+            }
+          }
+        }
+      },
+      "UserPartialUpdateInput": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "format": "password"
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "Create a New User",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the user.",
+                    "example": "Md Mizanur Rahman"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "The email address of the user.",
+                    "example": "mizanurrahman@gmail.com"
+                  },
+                  "roles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "admin",
+                        "user"
+                      ],
+                      "default": "user"
+                    }
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password of the user.",
+                    "example": "secret"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User registered successfully"
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "signin": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "signin"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/auth/signin"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "POST"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 409
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User with this email already exists."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "summary": "User Login",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "mizanurrahman@gmail.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "pass1234"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User Login Successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Md Mizanur Rahman"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "token": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/auth/signin"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "POST"
+                            }
+                          }
+                        },
+                        "logout": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "logout"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/auth/logout"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "POST"
+                            }
+                          }
+                        },
+                        "profile": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "profile"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/users/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Authentication failed. Invalid credentials."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipes": {
+      "post": {
+        "summary": "Create a Recipe",
+        "tags": [
+          "Recipe"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "ingredients": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ingredient": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "quantity": {
+                          "type": "string",
+                          "example": "2 breasts"
+                        }
+                      }
+                    }
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "example": "Boil water"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Chicken Alfredo"
+                        },
+                        "ingredients": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                          }
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "example": "Boil water"
+                        },
+                        "creator": {
+                          "$ref": "#/components/schemas/Creator"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "get": {
+        "summary": "This End Point Responsible for Retrieve All Recipes",
+        "tags": [
+          "Recipe"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortParam"
+          },
+          {
+            "$ref": "#/components/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortTypeParam"
+          },
+          {
+            "$ref": "#/components/parameters/ExpandParams"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve All Recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "recipes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "example": "550e8400-e29b-41d4-a716-446655440000"
+                              },
+                              "title": {
+                                "type": "string",
+                                "example": "Chicken Alfredo"
+                              },
+                              "ingredients": {
+                                "type": "array",
+                                "items": {
+                                  "$ref": "#/components/schemas/Ingredient"
+                                }
+                              },
+                              "instructions": {
+                                "type": "string",
+                                "example": "boil egg"
+                              },
+                              "creator": {
+                                "$ref": "#/components/schemas/Creator"
+                              },
+                              "recipeLink": {
+                                "type": "object",
+                                "properties": {
+                                  "href": {
+                                    "type": "string",
+                                    "example": "/recipes/recipe_id1"
+                                  },
+                                  "rel": {
+                                    "type": "string",
+                                    "example": "self"
+                                  }
+                                }
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "updatedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "pagination": {
+                                "$ref": "#/components/schemas/Pagination"
+                              },
+                              "links": {
+                                "$ref": "#/components/schemas/PaginationLinks"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/QueryParamValidationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/SearchNotFoundResponse"
+          }
+        }
+      }
+    },
+    "/recipes/{id}": {
+      "put": {
+        "summary": "This End Point Responsible for Update Recipe Data.",
+        "tags": [
+          "Recipe"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "ingredients": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ingredient": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "quantity": {
+                          "type": "string",
+                          "example": "2 breasts"
+                        }
+                      }
+                    }
+                  },
+                  "instructions": {
+                    "type": "string",
+                    "example": "Boil water"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recipe Updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Chicken Alfredo"
+                        },
+                        "ingredients": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                          }
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "example": "Boil water"
+                        },
+                        "creator": {
+                          "$ref": "#/components/schemas/Creator"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Recipe created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Chicken Alfredo"
+                        },
+                        "ingredients": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                          }
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "example": "Boil water"
+                        },
+                        "creator": {
+                          "$ref": "#/components/schemas/Creator"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "get": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "summary": "This End Point Responsible For Delete Item",
+        "tags": [
+          "Recipe"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DataDeletedResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "get": {
+        "summary": "This End Point Responsible For Retrieve Item",
+        "tags": [
+          "Recipe"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          },
+          {
+            "$ref": "#/components/parameters/ExpandParams"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe Updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "title": {
+                          "type": "string",
+                          "example": "Chicken Alfredo"
+                        },
+                        "ingredients": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Ingredient"
+                          }
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "example": "Boil water"
+                        },
+                        "creator": {
+                          "$ref": "#/components/schemas/Creator"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "example": "/recipes/recipe_id1"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          }
+        }
+      }
+    },
+    "/ingredients": {
+      "post": {
+        "summary": "This End Point Responsible for create index",
+        "tags": [
+          "Ingredient"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Tomato"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "A red, juicy fruit often used in salads and sauces."
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "Vegetable",
+                      "Fruit",
+                      "Protein",
+                      "Grain",
+                      "Dairy",
+                      "Other"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ingredient Created Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Tomato"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "A red, juicy fruit often used in salads and sauces."
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "Vegetable",
+                            "Fruit",
+                            "Protein",
+                            "Grain",
+                            "Dairy",
+                            "Other"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "get": {
+        "summary": "This End Point Responsible For Fetch All ingredients Data",
+        "tags": [
+          "Ingredient"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageParam"
+          },
+          {
+            "$ref": "#/components/parameters/LimitParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortParam"
+          },
+          {
+            "$ref": "#/components/parameters/SearchParam"
+          },
+          {
+            "$ref": "#/components/parameters/SortTypeParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ingredients Data List Get Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "format": "int32",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "$ref": "#/components/schemas/Id"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "Chicken"
+                          },
+                          "quantity": {
+                            "type": "string",
+                            "example": "2 breasts"
+                          },
+                          "category": {
+                            "type": "string",
+                            "enum": [
+                              "Vegetable",
+                              "Fruit",
+                              "Protein",
+                              "Grain",
+                              "Dairy",
+                              "Other"
+                            ]
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "link": {
+                            "type": "object",
+                            "properties": {
+                              "href": {
+                                "type": "string",
+                                "format": "uri",
+                                "example": "/ingredients/id"
+                              },
+                              "rel": {
+                                "type": "string",
+                                "example": "self"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "links": {
+                      "$ref": "#/components/schemas/PaginationLinks"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/QueryParamValidationError"
+          },
+          "404": {
+            "$ref": "#/components/responses/SearchNotFoundResponse"
+          }
+        }
+      }
+    },
+    "/ingredients/{id}": {
+      "get": {
+        "summary": "This End Point Responsible For Fetch index",
+        "tags": [
+          "Ingredient"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "index Fetch Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Tomato"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "A red, juicy fruit often used in salads and sauces."
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "Vegetable",
+                            "Fruit",
+                            "Protein",
+                            "Grain",
+                            "Dairy",
+                            "Other"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          }
+        }
+      },
+      "put": {
+        "summary": "This End Point Responsible For Update index",
+        "tags": [
+          "Ingredient"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Tomato"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "A red, juicy fruit often used in salads and sauces."
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "Vegetable",
+                      "Fruit",
+                      "Protein",
+                      "Grain",
+                      "Dairy",
+                      "Other"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "index Update Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Tomato"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "A red, juicy fruit often used in salads and sauces."
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "Vegetable",
+                            "Fruit",
+                            "Protein",
+                            "Grain",
+                            "Dairy",
+                            "Other"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Ingredient Created Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number",
+                      "example": 201
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "$ref": "#/components/schemas/Id"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Tomato"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "A red, juicy fruit often used in salads and sauces."
+                        },
+                        "category": {
+                          "type": "string",
+                          "enum": [
+                            "Vegetable",
+                            "Fruit",
+                            "Protein",
+                            "Grain",
+                            "Dairy",
+                            "Other"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    },
+                    "links": {
+                      "type": "object",
+                      "properties": {
+                        "self": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "self"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "GET"
+                            }
+                          }
+                        },
+                        "edit": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "edit"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "PUT"
+                            }
+                          }
+                        },
+                        "delete": {
+                          "type": "object",
+                          "properties": {
+                            "rel": {
+                              "type": "string",
+                              "example": "delete"
+                            },
+                            "href": {
+                              "type": "string",
+                              "format": "url",
+                              "example": "/ingredients/id"
+                            },
+                            "method": {
+                              "type": "string",
+                              "example": "DELETE"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "summary": "This Api Responsible for Delete ingredients",
+        "tags": [
+          "Ingredient"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DataDeletedResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "This Api Responsible For Get User Profile Data",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User Profile Data Fetch Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          }
+        }
+      },
+      "put": {
+        "summary": "This Api Responsible For Update User Profile Data",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User Profile Data Update Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      },
+      "delete": {
+        "summary": "This Api Responsible For Delete User Profile Data",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DataDeletedResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    },
+    "/users/{id}/password": {
+      "patch": {
+        "summary": "Update User PassWord",
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdParams"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPartialUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User PassWord Update Successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        }
+      }
+    }
+  }
+}
