@@ -37,8 +37,8 @@ func ServeStaticFiles() http.Handler {
 
 // APIConfig represents the API configuration.
 type APIConfig struct {
-	Port            string
-	SwaggerSpecPath string
+	Port        string
+	SwaggerSpec string
 }
 
 // CreateAPIRouter creates a new API router.
@@ -49,14 +49,15 @@ func CreateAPIRouter(config APIConfig) *http.ServeMux {
 	router.Handle("/public/", ServeStaticFiles())
 
 	// Swagger
-	swaggerOpts := middleware.SwaggerUIOpts{SpecURL: config.SwaggerSpecPath}
-	swaggerMiddleware := middleware.SwaggerUI(swaggerOpts, nil)
-	router.Handle("/docs/v1", swaggerMiddleware)
+	router.Handle("/"+config.SwaggerSpec, http.FileServer(http.Dir("./")))
+	docOpts := middleware.SwaggerUIOpts{SpecURL: config.SwaggerSpec, Path: "docs"}
+	docMiddleware := middleware.SwaggerUI(docOpts, nil)
+	router.Handle("/docs", docMiddleware)
 
 	// Redoc
-	redocOpts := middleware.RedocOpts{SpecURL: config.SwaggerSpecPath}
+	redocOpts := middleware.RedocOpts{SpecURL: config.SwaggerSpec, Path: "redoc"}
 	redocMiddleware := middleware.Redoc(redocOpts, nil)
-	router.Handle("/redoc/v1", redocMiddleware)
+	router.Handle("/redoc", redocMiddleware)
 
 	return router
 }
