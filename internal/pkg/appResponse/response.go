@@ -38,3 +38,14 @@ func ResponseMessage(w http.ResponseWriter, status int, message interface{}) {
 	return
 
 }
+
+func RawResponse(w http.ResponseWriter, status int, response interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		ResponseMessage(w, http.StatusInternalServerError, "Error encoding response")
+		return
+	}
+
+}

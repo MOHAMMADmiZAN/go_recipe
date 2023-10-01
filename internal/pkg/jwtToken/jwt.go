@@ -2,6 +2,7 @@ package jwtToken
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -20,20 +21,19 @@ func GetJwtSecret() string {
 }
 
 // EncodeToken encodes data into a JSON Web Token (JWT) with an expiration time.
-func EncodeToken(ctx context.Context, data map[string]interface{}, expiryTime time.Duration) (string, error) {
+func EncodeToken(ctx context.Context, data map[string]interface{}, expiryTime time.Time) (string, error) {
 	secretKey := GetJwtSecret()
-	signingKey := func(token *jwt.Token) (interface{}, error) {
-		return []byte(secretKey), nil
+	currentTime := time.Now()
+	if expiryTime.Before(currentTime) {
+		return "", errors.New("expiration time should be in the future")
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(data))
-	token.Claims.(jwt.MapClaims)["exp"] = time.Now().Add(expiryTime).Unix()
+	token.Claims.(jwt.MapClaims)["exp"] = expiryTime.Unix()
 
-	signedToken, err := token.SignedString(signingKey)
+	signedToken, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode token: %w", err)
 	}
-
 	return signedToken, nil
 }
 

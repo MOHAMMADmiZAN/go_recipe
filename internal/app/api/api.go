@@ -5,6 +5,7 @@ import (
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/appResponse"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/db"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
@@ -30,11 +31,6 @@ func HandleHealthRequest(w http.ResponseWriter, r *http.Request) {
 	appResponse.ResponseMessage(w, http.StatusOK, response)
 }
 
-// ServeStaticFiles Define a function named "ServeStaticFiles" to serve static files from the "/public/" path.
-func ServeStaticFiles() http.Handler {
-	return http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
-}
-
 // Config represents the API configuration.
 type Config struct {
 	Port        string
@@ -42,31 +38,30 @@ type Config struct {
 }
 
 // CreateAPIRouter creates a new API router.
-func CreateAPIRouter(config Config) *http.ServeMux {
+func CreateAPIRouter(config Config) *mux.Router {
 	// Create a new router
-	router := http.NewServeMux()
+	router := mux.NewRouter()
 	// Add routes
-	router.HandleFunc("/health", HandleHealthRequest)
-	router.Handle("/public/", ServeStaticFiles())
+	router.HandleFunc("/health", HandleHealthRequest).Methods(http.MethodGet)
+	router.PathPrefix("/public/").Handler(http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
+	// api v1 router group
+	apiV1Router := router.PathPrefix("/api/v1").Subrouter()
+	// auth router
+	apiV1Router.PathPrefix("/auth").Handler(http.StripPrefix("/api/v1/auth", AuthApi()))
 
-	// Swagger spec file
-	router.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
-	// Swagger UI docs
+	// Swagger UI and Redoc setup
 	swaggerOpts := middleware.SwaggerUIOpts{
 		SpecURL: config.SwaggerSpec,
 		Path:    "/docs",
 	}
-	swaggerMiddleware := middleware.SwaggerUI(swaggerOpts, nil)
-	router.Handle("/docs", swaggerMiddleware)
+	router.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+	router.PathPrefix("/docs").Handler(middleware.SwaggerUI(swaggerOpts, nil))
 
-	// Redoc
 	redocOpts := middleware.RedocOpts{
 		SpecURL: config.SwaggerSpec,
 		Path:    "/redoc",
 	}
-	redocMiddleware := middleware.Redoc(redocOpts, nil)
-	router.Handle("/redoc", redocMiddleware)
-
+	router.PathPrefix("/redoc").Handler(middleware.Redoc(redocOpts, nil))
 	return router
 }
 
