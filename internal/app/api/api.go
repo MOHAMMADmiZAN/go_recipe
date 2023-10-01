@@ -4,10 +4,9 @@ import (
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/app/server"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/appResponse"
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/db"
-	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/utils"
+	"github.com/go-openapi/runtime/middleware"
 	"log"
 	"net/http"
-	"os"
 )
 
 // HealthResponse represents a health response.
@@ -36,21 +35,35 @@ func ServeStaticFiles() http.Handler {
 	return http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
 }
 
-// render swagger ui
-func renderSwaggerUI(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "./public/swagger-ui.html")
+// APIConfig represents the API configuration.
+type APIConfig struct {
+	Port            string
+	SwaggerSpecPath string
 }
 
-// RunAPIServer starts the API server.
-func RunAPIServer() {
-	utils.LoadEnv()
-	port := os.Getenv("PORT")
+// CreateAPIRouter creates a new API router.
+func CreateAPIRouter(config APIConfig) *http.ServeMux {
 	router := http.NewServeMux()
 
 	router.HandleFunc("/health", HandleHealthRequest)
 	router.Handle("/public/", ServeStaticFiles())
-	router.HandleFunc("/", renderSwaggerUI)
 
+	// Swagger
+	swaggerOpts := middleware.SwaggerUIOpts{SpecURL: config.SwaggerSpecPath}
+	swaggerMiddleware := middleware.SwaggerUI(swaggerOpts, nil)
+	router.Handle("/docs/v1", swaggerMiddleware)
+
+	// Redoc
+	redocOpts := middleware.RedocOpts{SpecURL: config.SwaggerSpecPath}
+	redocMiddleware := middleware.Redoc(redocOpts, nil)
+	router.Handle("/redoc/v1", redocMiddleware)
+
+	return router
+}
+
+// RunAPIServer starts the API server.
+func RunAPIServer(config APIConfig) {
+	router := CreateAPIRouter(config)
 	err := db.Init()
 	if err != nil {
 		log.Printf("Error initializing database: %v", err)
@@ -63,7 +76,7 @@ func RunAPIServer() {
 		return
 	}
 	if client != nil {
-		server.RunServer(port, router)
+		server.RunServer(config.Port, router)
 	}
 
 }
