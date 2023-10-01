@@ -100,7 +100,7 @@ func SignUP(w http.ResponseWriter, r *http.Request) {
 func SignIN(w http.ResponseWriter, r *http.Request) {
 	var authUserRequest loginRequestedUser
 	if err := json.NewDecoder(r.Body).Decode(&authUserRequest); err != nil {
-		appResponse.ResponseMessage(w, 401, "Invalid Credential")
+		appResponse.ResponseMessage(w, http.StatusUnauthorized, "Invalid Credential")
 		return
 	}
 	if err := validateLoginData(authUserRequest); err != nil {
@@ -111,7 +111,7 @@ func SignIN(w http.ResponseWriter, r *http.Request) {
 	existUserPassword := userService.ExistsUserPassword(w, authUserRequest.Email)
 	// password compare
 	if err := encrypt.ComparePassword(context.Background(), authUserRequest.Password, existUserPassword); err != nil {
-		appResponse.ResponseMessage(w, 401, "Invalid Credential")
+		appResponse.ResponseMessage(w, http.StatusUnauthorized, "Invalid Credential")
 		return
 	}
 	// get User

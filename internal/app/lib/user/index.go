@@ -67,6 +67,16 @@ func GetUser(w http.ResponseWriter, email string) *model.User {
 	return user
 }
 
+// GetUserById find by id
+func GetUserById(id primitive.ObjectID) *model.User {
+	user := &model.User{}
+	err := mgm.Coll(user).FindByID(id, user)
+	if err != nil {
+		return nil
+	}
+	return user
+}
+
 // ExistsUser Exists User
 func ExistsUser(email string) bool {
 	user := &model.User{}
