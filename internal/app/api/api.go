@@ -35,27 +35,35 @@ func ServeStaticFiles() http.Handler {
 	return http.StripPrefix("/public/", http.FileServer(http.Dir("./public")))
 }
 
-// APIConfig represents the API configuration.
-type APIConfig struct {
+// Config represents the API configuration.
+type Config struct {
 	Port        string
 	SwaggerSpec string
 }
 
 // CreateAPIRouter creates a new API router.
-func CreateAPIRouter(config APIConfig) *http.ServeMux {
+func CreateAPIRouter(config Config) *http.ServeMux {
+	// Create a new router
 	router := http.NewServeMux()
-
+	// Add routes
 	router.HandleFunc("/health", HandleHealthRequest)
 	router.Handle("/public/", ServeStaticFiles())
 
-	// Swagger
-	router.Handle("/"+config.SwaggerSpec, http.FileServer(http.Dir("./")))
-	docOpts := middleware.SwaggerUIOpts{SpecURL: config.SwaggerSpec, Path: "docs"}
-	docMiddleware := middleware.SwaggerUI(docOpts, nil)
-	router.Handle("/docs", docMiddleware)
+	// Swagger spec file
+	router.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+	// Swagger UI docs
+	swaggerOpts := middleware.SwaggerUIOpts{
+		SpecURL: config.SwaggerSpec,
+		Path:    "/docs",
+	}
+	swaggerMiddleware := middleware.SwaggerUI(swaggerOpts, nil)
+	router.Handle("/docs", swaggerMiddleware)
 
 	// Redoc
-	redocOpts := middleware.RedocOpts{SpecURL: config.SwaggerSpec, Path: "redoc"}
+	redocOpts := middleware.RedocOpts{
+		SpecURL: config.SwaggerSpec,
+		Path:    "/redoc",
+	}
 	redocMiddleware := middleware.Redoc(redocOpts, nil)
 	router.Handle("/redoc", redocMiddleware)
 
@@ -63,7 +71,7 @@ func CreateAPIRouter(config APIConfig) *http.ServeMux {
 }
 
 // RunAPIServer starts the API server.
-func RunAPIServer(config APIConfig) {
+func RunAPIServer(config Config) {
 	router := CreateAPIRouter(config)
 	err := db.Init()
 	if err != nil {

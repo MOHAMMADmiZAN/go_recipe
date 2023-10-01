@@ -8,7 +8,7 @@ import (
 
 func StartApp() {
 	utils.LoadEnv()
-	config := api.APIConfig{
+	config := api.Config{
 		Port:        os.Getenv("PORT"),
 		SwaggerSpec: "swagger.yaml",
 	}
