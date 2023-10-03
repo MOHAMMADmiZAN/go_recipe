@@ -2,17 +2,19 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/MOHAMMADmiZAN/go_recipe/internal/pkg/appResponse"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
-	"os"
 )
 
 // LoadEnv load env file
 func LoadEnv() {
 	err := godotenv.Load(".env")
 	if err != nil {
+		fmt.Println("Error loading .env file")
 		os.Exit(1)
 	}
 }
