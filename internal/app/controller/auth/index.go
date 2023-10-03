@@ -124,7 +124,7 @@ func SignIN(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the expiration time for the token (e.g., 60 minutes)
-	expirationTime := time.Now().Add(60 * time.Minute)
+	expirationTime := time.Now().Add(120 * time.Minute)
 	// Encode the payload into a JWT token
 	token, err := jwtToken.EncodeToken(context.Background(), payload, expirationTime)
 	if err != nil {

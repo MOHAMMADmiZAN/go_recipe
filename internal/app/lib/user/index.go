@@ -86,13 +86,3 @@ func ExistsUser(email string) bool {
 	}
 	return true
 }
-
-// HexToObjectId hex to ObjectId
-func HexToObjectId(hex string) primitive.ObjectID {
-	var w http.ResponseWriter
-	id, err := primitive.ObjectIDFromHex(hex)
-	if err != nil {
-		appResponse.ResponseMessage(w, http.StatusBadRequest, "ObjectId Create Failed")
-	}
-	return id
-}

@@ -37,6 +37,14 @@ type Config struct {
 	SwaggerSpec string
 }
 
+func test() *mux.Router {
+	testRouter := mux.NewRouter()
+	testRouter.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("Hello World"))
+	}).Methods(http.MethodGet)
+	return testRouter
+}
+
 // CreateAPIRouter creates a new API router.
 func CreateAPIRouter(config Config) *mux.Router {
 	// Create a new router
@@ -48,6 +56,8 @@ func CreateAPIRouter(config Config) *mux.Router {
 	apiV1Router := router.PathPrefix("/api/v1").Subrouter()
 	// auth router
 	apiV1Router.PathPrefix("/auth").Handler(http.StripPrefix("/api/v1/auth", AuthApi()))
+	// ingredient router
+	apiV1Router.PathPrefix("/ingredients").Handler(http.StripPrefix("/api/v1", IngredientApi()))
 
 	// Swagger UI and Redoc setup
 	swaggerOpts := middleware.SwaggerUIOpts{
