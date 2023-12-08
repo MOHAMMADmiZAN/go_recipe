@@ -183,7 +183,7 @@ func createResponse(signInURL string) createdUserResponse {
 	}
 }
 
-// login Response
+// LoginUserResponse login Response
 func LoginUserResponse(user authUser, token string) LoginResponse {
 	// Create the response object
 	response := LoginResponse{
